@@ -6,8 +6,15 @@ Project 2  - Buffer Manager
 
 
 2. I have implemented all the features required in buf.C and my code passed all the sample test cases that were provided
-to us. My error handling codes are a still a work in progress and might not necessarily reflect the different
-error situations. But the functions execute correctly and return the correct boolean status at the end of the code run
+to us. I have also tried to implement the error handling codes using enums
+and I am returning the ERROR or NON-OK status messages using MINIBASE_CHAIN_ERROR. I have made use of the error codes/enums
+which were defined in buf.H of Project 1. However I have not used all the error messages/codes defined in the enums and have
+implemented only few of them. But the code runs smoothly without errors and if you run this code with different test cases
+or input which would cause the code to go to the NON-OK return statements, then you can see the error messages generated
+by my code. I feel it should be good for the situations which I have handled. But there definitely could be other
+error messages/scenarios which could have been unhandled.
+
+
 
 3. Implementation of Love/hate replacement policy:
 ==================================================
@@ -56,6 +63,21 @@ By default I had set the hateFlag to True. This ensures if and when a page was m
 that will give me an indication of which queue to push the page. And the same flag is used by me to check before popping, which
 queue needs to be popped.
 
-The reason for choosing hash table is straight forward in this case and doesn't require any explanation.
+Hash table was basically implemented as array of pointers to lists. The lists in this case were linked lists created using struct
+HashMap and the directory was an array of pointers of the structure type.
 
-I have implemented the love/hate replacement as per the instructions given in the assignment.
+Replacement Policy Implementation
+==================================
+
+I have implemented the love/hate replacement as per the instructions given in the assignment. If no free frames are available
+or in other words if bufPool is full, I then go the hate queue first to check if there are any pages in the queue.
+If so, I pop the most recent element which was inserted into the queue so that it confirms to the MRU policy.
+I get the corresponding frame no for the page and then read the content of the new page to be pinned into the frame
+and set the intial values for the fields in the buffer descriptor.
+
+If there are no pages in the hate queue, then I go and check into the love queue to see if it has any pages in it.If it has
+then all those pages are potential candidates for replacement and I choose the page which was leat recently used.
+I then repeat the same process as I did for a page from the hate queue.
+
+If both the conditions fail, i.e when the hate/love queue does not have any pages and the bufferpool is full, then I return
+CANNOT_PIN_PAGE error status message.
