@@ -14,22 +14,31 @@
 #define EMPTY_FRAME -1
 
 // Define buffer manager error messages here
-//enum bufErrCodes  {};
+enum bufErrCodes
+{
+        HASH_TBL_ERROR,
+        HASH_NOT_FOUND,
+        BUFFER_EXCEEDED,
+        CANNOT_PIN_PAGE,
+        PAGE_NOT_PINNED,
+        BAD_BUFFER,
+        PAGE_PINNED,
+        PAGE_NOT_FOUND,
+        FRAME_EMPTY
+};
 
 // Define error message here
 static const char* bufErrMsgs[] = {
 
-        /*HASH_TBL_ERROR,
-        HASH_NOT_FOUND,
-        BUFFER_EXCEEDED,
+        "Hash table Error" //HASH_TBL_ERROR,
+        "Hash not found" //HASH_NOT_FOUND,
+        "Buffer exceeded" //BUFFER_EXCEEDED,
         "Page cannot be pinned. No empty frames available and hate/love queues are empty", //CANNOT_PIN_PAGE
         "Page to be unpinned is not pinned in the first place !", //PAGE_NOT_PINNED
-        BAD_BUFFER,
+        "Bad Buffer" //BAD_BUFFER,
         "Page is pinned. Cannot free a pinned page !", //PAGE_PINNED,
-        REPLACER_ERROR,
-        BAD_BUF_FRAMENO,
         "Page not found in the hash table !", //PAGE_NOT_FOUND,
-        "Frame is empty" //FRAME_EMPTY*/
+        "Frame is empty" //FRAME_EMPTY
 };
 
 // Create a static "error_string_table" object and register the error messages
@@ -207,8 +216,8 @@ Status BufMgr::pinPage(PageId PageId_in_a_DB, Page*& page, int emptyPage)
 
       else                                                      //There are no frames there in both hate or love queue
       {
-        //return MINIBASE_CHAIN_ERROR(BUFMGR,CANNOT_PIN_PAGE);
-        return FAIL;
+        return MINIBASE_CHAIN_ERROR(BUFMGR,(Status)CANNOT_PIN_PAGE);
+        //return FAIL;
       }
     }                                                           //end-if PoppedPageHQ
   }                                                            //End of else-if
@@ -231,8 +240,8 @@ Status BufMgr::newPage(PageId& firstPageId, Page*& firstpage, int howmany)
     if(stat2 != 0)                                                    // If the first page could not be pinned, deallocate pages
     {
       MINIBASE_DB->deallocate_page(firstPageId,howmany);
-      return FAIL;
-      //return MINIBASE_CHAIN_ERROR(BUFMGR,CANNOT_PIN_PAGE);         //Page cannot be pinned.So deallocate memory.
+      //return FAIL;
+      return MINIBASE_CHAIN_ERROR(BUFMGR,(Status)CANNOT_PIN_PAGE);         //Page cannot be pinned.So deallocate memory.
     }
 
     return OK;
@@ -244,8 +253,8 @@ Status BufMgr::flushPage(PageId pageid) {
   int frame_no=htab.search(pageid);
   if(frame_no == -1)
   {
-    return FAIL;
-    //return MINIBASE_CHAIN_ERROR(BUFMGR,PAGE_NOT_FOUND);
+    //return FAIL;
+    return MINIBASE_CHAIN_ERROR(BUFMGR,(Status)PAGE_NOT_FOUND);
   }
 
   if (bufDescr[frame_no].dirtybit==TRUE)
@@ -302,12 +311,12 @@ Status BufMgr::unpinPage(PageId page_num, int dirty=FALSE, int hate = FALSE) {
 
   int frame_no = htab.search(page_num);
   if (frame_no == -1)
-    return FAIL;                          //The page to be unpinned is not present in any of the frames. So return FAIL
-    //return MINIBASE_CHAIN_ERROR(BUFMGR,PAGE_NOT_FOUND);//Page does not exist in hash table
+    //return FAIL;                          //The page to be unpinned is not present in any of the frames. So return FAIL
+    return MINIBASE_CHAIN_ERROR(BUFMGR,(Status)PAGE_NOT_FOUND);//Page does not exist in hash table
 
   if (bufDescr[frame_no].pin_count == 0)
-    return FAIL;                       //Must be error. If the page to be unpinned already has a picCount==0 ,return ERROR
-    //return MINIBASE_CHAIN_ERROR(BUFMGR,PAGE_NOT_PINNED);//Page to be unpinned is already unpinned.
+    //return FAIL;                       //Must be error. If the page to be unpinned already has a picCount==0 ,return ERROR
+    return MINIBASE_CHAIN_ERROR(BUFMGR,(Status)PAGE_NOT_PINNED);//Page to be unpinned is already unpinned.
 
 
   else if (bufDescr[frame_no].pin_count > 0)
@@ -377,8 +386,8 @@ Status BufMgr::freePage(PageId globalPageId)
   int frame_no=htab.search(globalPageId);
   if (frame_no == -1)                                    //Page not found in the hash table
   {
-    return FAIL;
-    //return MINIBASE_CHAIN_ERROR(BUFMGR,PAGE_NOT_FOUND);  //Page-not-found error
+    //return FAIL;
+    return MINIBASE_CHAIN_ERROR(BUFMGR,(Status)PAGE_NOT_FOUND);  //Page-not-found error
   }
 
   if(bufDescr[frame_no].pin_count==0)                   //Indicates the page is present in the hash table
@@ -412,8 +421,8 @@ Status BufMgr::freePage(PageId globalPageId)
     return OK;
   }
 
-  return FAIL;
-  //return MINIBASE_CHAIN_ERROR(BUFMGR,PAGE_PINNED);       //Page is pinned. Cannot free a pinned page
+  //return FAIL;
+  return MINIBASE_CHAIN_ERROR(BUFMGR,(Status)PAGE_PINNED);       //Page is pinned. Cannot free a pinned page
 
 } //end-function
 

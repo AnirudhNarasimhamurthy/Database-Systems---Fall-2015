@@ -278,19 +278,6 @@ struct replacementQueue
 /*******************ALL BELOW are purely local to buffer Manager********/
 
 // You should create enums for internal errors in the buffer manager.
-enum bufErrCodes  {
-    HASH_TBL_ERROR,
-    HASH_NOT_FOUND,
-    BUFFER_EXCEEDED,
-    PAGE_NOT_PINNED,
-    BAD_BUFFER,
-    PAGE_PINNED,
-    REPLACER_ERROR,
-    BAD_BUF_FRAMENO,
-    PAGE_NOT_FOUND,
-    FRAME_EMPTY
-
-    };
 
 class Replacer;
 
