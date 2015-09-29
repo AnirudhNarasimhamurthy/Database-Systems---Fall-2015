@@ -37,7 +37,6 @@ struct HashTable
 
     void init()
     {
-        //directory=(HashMap*)malloc(HTSIZE * sizeof(HashMap));
         for (int i=0;i<HTSIZE;i++)
         {
             directory[i]=NULL;
@@ -48,7 +47,7 @@ struct HashTable
     }
 
 
-    int hash_value(PageId pageNo)
+    int hash_value(PageId pageNo)                   //Test function to verify the hash values for the directory indices
     {
         return (a*pageNo +b)% HTSIZE;
     }
@@ -68,10 +67,7 @@ struct HashTable
 
         /*Using the hash function (a *value + b)% HTSIZE */
 
-        //Finding the hash value for a given page number
-
-        int directory_index= (a*page +b)% HTSIZE;
-
+        int directory_index= (a*page +b)% HTSIZE;       //Finding the hash value for a given page number
 
         struct HashMap *node, *start, *temp;
 
@@ -79,31 +75,19 @@ struct HashTable
 
         node=createNode(page,frame);
 
-
         if(start==NULL)
         {
             directory[directory_index]=node;
             //start=node;
             //start->next=NULL;
         }
-        else
+        else                                           //Inserting elements at the beginning using a linked list
         {
             temp=start;
             directory[directory_index]=node;
             directory[directory_index]->next=temp;
 
         }
-
-        /*else
-        {
-            while (start->next != NULL)
-            {
-                start=start->next;
-            }
-            node->next=NULL;
-            start->next=node;
-
-        }*/
 
     }
 
@@ -114,9 +98,9 @@ struct HashTable
 
         int directory_index= (a*page +b)% HTSIZE;
         struct HashMap *start;
-        struct HashMap *temp =NULL; //*pre=NULL;
+        struct HashMap *temp =NULL;
         start=directory[directory_index];
-        if(start->page_no==page) //If the element to be deleted is the first element
+        if(start->page_no==page)                        //If the element to be deleted is the first element
         {
             temp=start;
             directory[directory_index]=temp->next;
@@ -124,19 +108,16 @@ struct HashTable
             return;
         }
 
-        //pre=start;
         temp=start->next;
 
         while(temp != NULL) {
-            if (temp->page_no == page) //If the element to be deleted is in the middle
+            if (temp->page_no == page)              //If the element to be deleted is in the middle or at the last
             {
-                //pre->next=temp->next;
                 start->next = temp->next;
-               delete temp;
+                delete temp;
                 return;
             }
 
-            //pre=temp;
             start = start->next;
             temp = temp->next;
         }
@@ -165,12 +146,12 @@ struct HashTable
 
                 if(start->page_no==page)
                 {
-                    return start->frame_no;
+                    return start->frame_no;                         //Returning the page's corresponding frame number
                 }
                 start=start->next;
             }
 
-            return -1; //If not found
+            return -1;                                              //If page not found
         }
 
     }
@@ -183,8 +164,8 @@ struct replacementQueue
 {
 
 
-    std::list<PageId> love_queue;  //  Love Queue to maintain a list of pages which was marked loved.
-    std::list<PageId> hate_queue;  // Hate Queue to maintain a list of pages which was marked hated */
+    std::list<PageId> love_queue;                   // Love Queue to maintain a list of pages which was marked loved.
+    std::list<PageId> hate_queue;                   // Hate Queue to maintain a list of pages which was marked hated */
     std::list<PageId>::iterator it;
 
     void push_love_queue(int pageNo)
@@ -193,7 +174,7 @@ struct replacementQueue
 
     }
 
-   int pop_love_queue() //Returns the frame no that was popped so that it could be used to determine a free frame to pin a new page
+   int pop_love_queue()                            //Returns the page no that was popped
     {
         if (!love_queue.empty())
         {
@@ -234,7 +215,7 @@ struct replacementQueue
 
     }
 
-    /*int search_love_queue(int pageNo)
+   /* int search_love_queue(int pageNo)                         //Search for an element in love queue
     {
         if (!love_queue.empty())
         {
@@ -250,7 +231,7 @@ struct replacementQueue
         }
     }
 
-    int search_hate_queue(int pageNo)
+    int search_hate_queue(int pageNo)                       //Search for an element in hate queue
     {
         if (!hate_queue.empty())
         {
@@ -270,7 +251,7 @@ struct replacementQueue
     {
         if (!hate_queue.empty())
         {
-                 hate_queue.remove(pageNo); //Frame already present in love queue
+                 hate_queue.remove(pageNo);             //Frame present in hate queue. Remove it
         }
         else
         {
@@ -282,7 +263,7 @@ struct replacementQueue
     {
         if (!love_queue.empty())
         {
-            love_queue.remove(pageNo); //Frame already present in love queue
+            love_queue.remove(pageNo);                  //Frame present in love queue. Remove it
         }
         else
         {
@@ -294,13 +275,20 @@ struct replacementQueue
 };
 
 
-
-
 /*******************ALL BELOW are purely local to buffer Manager********/
 
 // You should create enums for internal errors in the buffer manager.
 enum bufErrCodes  {
-
+    HASH_TBL_ERROR,
+    HASH_NOT_FOUND,
+    BUFFER_EXCEEDED,
+    PAGE_NOT_PINNED,
+    BAD_BUFFER,
+    PAGE_PINNED,
+    REPLACER_ERROR,
+    BAD_BUF_FRAMENO,
+    PAGE_NOT_FOUND,
+    FRAME_EMPTY
 
     };
 
@@ -317,22 +305,22 @@ private:
         PageId pageNo;
         unsigned int pin_count;
         bool dirtybit;
-        bool hateFlag; //To keep track if a page needs to stay in the loved list or hate list
+        bool hateFlag;                      //To keep track if a page needs to stay in the loved list or hate list
 
     } *bufDescr ;
 
-    int bufCnt; //Maintains a track of the number of frames filled in the buffer pool
+    int bufCnt;                             //Maintains a track of the number of frames filled in the buffer pool
 
     int numBuf;
 
-    HashTable htab; //Object for the hastable structure
+    HashTable htab;                         //Object for the hastable structure
 
-    replacementQueue rq; //Object for the replacementQueue
+    replacementQueue rq;                    //Object for the replacementQueue
 
 
 public:
 
-    Page* bufPool; // The actual buffer pool
+    Page* bufPool;                          // The actual buffer pool
 
     BufMgr (int numbuf, Replacer *replacer = 0); 
     // Initializes a buffer manager managing "numbuf" buffers.
@@ -340,7 +328,7 @@ public:
   	// implementation of minibase, it is a pointer to an object
 	// representing one of several buffer pool replacement schemes.
 
-    ~BufMgr();           // Flush all valid dirty pages to disk
+    ~BufMgr();                              // Flush all valid dirty pages to disk
 
     Status pinPage(PageId PageId_in_a_DB, Page*& page, int emptyPage=0);
         // Check if this page is in buffer pool, otherwise
