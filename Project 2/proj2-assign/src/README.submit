@@ -1,0 +1,61 @@
+=================================================================
+Project 2  - Buffer Manager
+=================================================================
+
+1. Name: Anirudh Narasimhamurthy(u0941400)
+
+
+2. I have implemented all the features required in buf.C and my code passed all the sample test cases that were provided
+to us. My error handling codes are a still a work in progress and might not necessarily reflect the different
+error situations. But the functions execute correctly and return the correct boolean status at the end of the code run
+
+3. Implementation of Love/hate replacement policy:
+==================================================
+
+The implementation details of my love/hae replacement policy is as follows:
+
+Data Structures used:
+=====================
+
+a. Structure for the hash map:
+ struct HashMap
+    {
+        int frame_no;
+        PageId page_no;
+        HashMap *next;
+
+    };
+
+b. HashMap* directory[HTSIZE];
+
+c. Lists for the replacement queues:
+
+    std::list<PageId> love_queue;
+    std::list<PageId> hate_queue;
+
+The functions for push/pop from the love/hate queue as well as the functionality to remove an element from the love/hate
+queue was coded.All the functions were placed inside a structure "replacementQueue".
+
+Reason for choosing lists:
+==========================
+
+Lists allow easy insertion and deletion.Also since our Love and Hate Queues are going to use MRU and LRU, they are effectively
+queue and a stack. But the advantage with using lists was we could also perform removal of an item in constant time.
+Also C++ list's offer methods for push_front and push_back and as well as pop_front and pop_back.These were quite useful
+and perfectly fits our scenario. The remove element method in particular is useful for the scenario when the page to be pinned
+is in love/hate queue and so it first needs to be removed from there and then read into buffer pool. Delete
+operations is stack/queue might take more time as we have to traverse to get to the element. But list offers
+constant time deletion.
+
+Love/hate status tracking:
+==========================
+
+In order to keep track of the love/hate status when a page is unpinned, I had a hateFlag data member inside my Buffer
+Descriptor. If a page was marked as loved even once, then its hateFlag is always set to False unless it is removed/freed.
+By default I had set the hateFlag to True. This ensures if and when a page was marked as loved, I would update my flag and
+that will give me an indication of which queue to push the page. And the same flag is used by me to check before popping, which
+queue needs to be popped.
+
+The reason for choosing hash table is straight forward in this case and doesn't require any explanation.
+
+I have implemented the love/hate replacement as per the instructions given in the assignment.
